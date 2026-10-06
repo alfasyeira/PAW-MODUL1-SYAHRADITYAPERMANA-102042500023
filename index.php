@@ -1,121 +1,424 @@
+```php
 <?php
-// ===== DATA PRODUK (array PHP) =====
-$produk = [
-    ["nama" => "Iphone 18 Promax",     "kategori" => "MURAH", "harga" => 30000000, "stok" => 25],
-    ["nama" => "Samsung Galaxy S26 Ultra",     "kategori" => "MAHAL", "harga" => 23000000, "stok" => 15],
-    ["nama" => "Oppo Find X9",     "kategori" => "MAHAL", "harga" => 17000000, "stok" => 0],
-    ["nama" => "Huawei Mate X7",   "kategori" => "MAHAL", "harga" => 19000000, "stok" => 10],
-    ["nama" => "Poco F8 Ultra", "kategori" => "MURAH", "harga" => 24000000, "stok" => 8],
-    ["nama" => "Samsung Galaxy Z Flip 8",       "kategori" => "MURAH",  "harga" => 30000000, "stok" => 40],
-    ["nama" => "Iphone 17 Promax",           "kategori" => "MURAH",  "harga" => 20000000, "stok" => 30],
+session_start();
+
+// ============================================================
+//  TUGAS JURNAL PRAKTIKUM - PEMROGRAMAN WEB
+//  Sistem Pendaftaran Calon Asisten Praktikum Laboratorium
+// ============================================================
+//  Nama  : ____________________
+//  NIM   : ____________________
+//  Kelas : ____________________
+// ============================================================
+
+// Daftar mata kuliah praktikum
+$daftar_matkul = [
+    "Algoritma dan Pemrograman",
+    "Analisis dan Perancangan Sistem Informasi",
+    "Arsitektur Enterprise",
+    "Data Warehouse dan Business Intelligence",
+    "Komputasi Awan",
+    "Pemodelan Proses Bisnis",
+    "Pengantar Sistem Informasi",
+    "Pengembangan Aplikasi Bergerak",
+    "Pengembangan Aplikasi Website",
+    "Pengembangan UI Lanjut",
+    "Proyek Perangkat Lunak",
+    "Sistem Enterprise",
+    "Sistem Informasi Akuntansi",
+    "Sistem Operasi"
 ];
 
 
-$batas_diskon = 23000000;
-$persen_diskon = 10;
+
+$nama = "";
+$whatsapp = "";
+$email = "";
+$matkul = "";
+$motivasi = "";
+
+$namaErr = "";
+$waErr = "";
+$emailErr = "";
+$matkulErr = "";
+$motivasiErr = "";
 
 
-function rupiah($angka) {
-    return "Rp" . number_format($angka, 0, ",", ".");
+
+$mode = "form";
+
+// Cek apakah tombol "Lihat Data Pendaftar" diklik
+if (isset($_GET['page']) && $_GET['page'] === 'id_card') {
+    if (!empty($_SESSION['data_pendaftar'])) {
+        $nama = $_SESSION['data_pendaftar']['nama'];
+        $whatsapp = $_SESSION['data_pendaftar']['whatsapp'];
+        $email = $_SESSION['data_pendaftar']['email'];
+        $matkul = $_SESSION['data_pendaftar']['matkul'];
+        $motivasi = $_SESSION['data_pendaftar']['motivasi'];
+        $mode = "id_card";
+    }
 }
 
-$total_produk = count($produk);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    
+
+    $nama = trim($_POST['nama_lengkap']);
+
+    if (empty($nama)) {
+        $namaErr = "Nama lengkap wajib diisi.";
+    } elseif (!preg_match("/^[a-zA-Z\s]+$/", $nama)) {
+        $namaErr = "Nama hanya boleh berisi huruf.";
+    }
+
+
+    
+    $whatsapp = trim($_POST['no_whatsapp']);
+
+    if (empty($whatsapp)) {
+        $waErr = "Nomor WhatsApp wajib diisi.";
+    } elseif (
+        substr($whatsapp, 0, 1) !== "0" &&
+        substr($whatsapp, 0, 2) !== "62"
+    ) {
+        $waErr = "Nomor WhatsApp harus diawali 0 atau 62.";
+    }
+
+
+   
+
+    $email = trim($_POST['email_institusi']);
+
+    if (empty($email)) {
+        $emailErr = "Email institusi wajib diisi.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $emailErr = "Format email tidak valid.";
+    }
+
+
+
+
+    $matkul = $_POST['pilihan_matkul'];
+
+    if (empty($matkul)) {
+        $matkulErr = "Pilihan mata kuliah wajib dipilih.";
+    }
+
+
+    
+
+    $motivasi = trim($_POST['motivasi']);
+
+    if (empty($motivasi)) {
+        $motivasiErr = "Motivasi wajib diisi.";
+    }
+
+
+    
+
+    if (
+        empty($namaErr) &&
+        empty($waErr) &&
+        empty($emailErr) &&
+        empty($matkulErr) &&
+        empty($motivasiErr)
+    ) {
+
+        $_SESSION['data_pendaftar'] = [
+            'nama' => $nama,
+            'whatsapp' => $whatsapp,
+            'email' => $email,
+            'matkul' => $matkul,
+            'motivasi' => $motivasi
+        ];
+
+        $mode = "id_card";
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CIA STORE</title>
-    <link rel="stylesheet" href="style.css">
+
+    <title>Pendaftaran Calon Asisten Praktikum</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-    <!-- NAVBAR -->
-    <header class="navbar">
-        <div class="container navbar-isi">
-            <div class="logo">CIA STORE</div>
-            <nav>
-                <a href="#beranda">Beranda</a>
-                <a href="#katalog">Menu</a>
-            </nav>
-        </div>
-    </header>
+    <?php if ($mode === "id_card") { ?>
 
-    <!-- HERO -->
-    <section class="hero" id="beranda">
-        <div class="container">
-            <h1>Harga Murah, Kualitas Terdepan.</h1>
-            <a href="#katalog" class="btn-hero">Lihat Menu</a>
-        </div>
-    </section>
+    <!-- ==================== MODE ID CARD ==================== -->
 
-    <!-- KATALOG -->
-    <main class="container" id="katalog">
-        <div class="katalog-atas">
-            <h2>Produk kami</h2>
-            <span class="total">Total Menu: <?= $total_produk; ?></span>
+    <div class="id-card">
+
+        <img src="logo.png" alt="Logo" class="logo">
+
+        <div class="id-card-header">
+            <h2>Kartu Registrasi</h2>
+            <p>Calon Asisten Praktikum Laboratorium</p>
         </div>
 
-        <div class="grid">
-            <?php foreach ($produk as $item) : ?>
-                <?php
-                    // Percabangan: cek diskon
-                    $dapat_diskon = $item["harga"] >= $batas_diskon;
-                    $harga_akhir  = $item["harga"];
-
-                    if ($dapat_diskon) {
-                        $potongan    = $item["harga"] * $persen_diskon / 100;
-                        $harga_akhir = $item["harga"] - $potongan;
-                    }
-
-                    // Percabangan: cek stok
-                    $tersedia = $item["stok"] > 0;
-                ?>
-                <div class="card">
-                    <div class="card-atas">
-                        <span class="kategori"><?= $item["kategori"]; ?></span>
-                        <?php if ($dapat_diskon) : ?>
-                            <span class="badge-diskon">Diskon <?= $persen_diskon; ?>%</span>
-                        <?php endif; ?>
-                    </div>
-
-                    <h3><?= $item["nama"]; ?></h3>
-
-                    <div class="harga">
-                        <?php if ($dapat_diskon) : ?>
-                            <span class="harga-normal"><?= rupiah($item["harga"]); ?></span>
-                            <span class="harga-akhir"><?= rupiah($harga_akhir); ?></span>
-                        <?php else : ?>
-                            <span class="harga-akhir"><?= rupiah($item["harga"]); ?></span>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="stok-baris">
-                        <span>Stok: <?= $item["stok"]; ?></span>
-                        <?php if ($tersedia) : ?>
-                            <span class="status tersedia">Tersedia</span>
-                        <?php else : ?>
-                            <span class="status habis">Stok Habis</span>
-                        <?php endif; ?>
-                    </div>
-
-                    <?php if ($tersedia) : ?>
-                        <button class="btn-beli">Beli Sekarang</button>
-                    <?php else : ?>
-                        <button class="btn-beli" disabled>Beli Sekarang</button>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
+        <div class="alert alert-success">
+            <strong>Berhasil!</strong> Data pendaftaran telah diterima.
         </div>
-    </main>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; <?= date("Y"); ?> KUALITAS PASTI.</p>
+        <div class="id-card-body">
+
+
+            <div class="id-card-row">
+                <span class="id-card-label">Nama Lengkap</span>
+                <span class="id-card-value">
+                    <?php echo htmlspecialchars($nama); ?>
+                </span>
+            </div>
+
+            <div class="id-card-row">
+                <span class="id-card-label">No. WhatsApp</span>
+                <span class="id-card-value">
+                    <?php echo htmlspecialchars($whatsapp); ?>
+                </span>
+            </div>
+
+            <hr class="id-card-divider">
+
+            <div class="id-card-row">
+                <span class="id-card-label">Email Institusi</span>
+                <span class="id-card-value">
+                    <?php echo htmlspecialchars($email); ?>
+                </span>
+            </div>
+
+            <div class="id-card-row">
+                <span class="id-card-label">Mata Kuliah</span>
+                <span class="id-card-value">
+                    <?php echo htmlspecialchars($matkul); ?>
+                </span>
+            </div>
+
+            <hr class="id-card-divider">
+
+            <div class="id-card-row">
+                <span class="id-card-label">Motivasi</span>
+                <span class="id-card-value">
+                    <?php echo nl2br(htmlspecialchars($motivasi)); ?>
+                </span>
+            </div>
+
+            <div style="text-align: center; margin-top: 18px;">
+                <span class="id-card-badge">
+                    Pendaftaran Berhasil
+                </span>
+            </div>
+
         </div>
-    </footer>
+
+        <a href="?page=form" class="btn-kembali">
+            Kembali ke Form
+        </a>
+
+        <div class="id-card-footer">
+            Nomor Registrasi:
+            REG-<?php echo strtoupper(substr(md5(time()), 0, 8)); ?>
+            &bull; Dicetak otomatis oleh sistem
+        </div>
+
+    </div>
+
+
+    <?php } else { ?>
+
+   
+
+    <div class="container">
+
+        <img src="logo.png" alt="Logo" class="logo">
+
+        <h2>Pendaftaran Asisten Praktikum</h2>
+
+        <p class="subtitle">
+            Laboratorium Enterprise Application Development
+        </p>
+
+
+        <?php if (
+            $_SERVER["REQUEST_METHOD"] == "POST" &&
+            (
+                !empty($namaErr) ||
+                !empty($waErr) ||
+                !empty($emailErr) ||
+                !empty($matkulErr) ||
+                !empty($motivasiErr)
+            )
+        ) { ?>
+
+        <div class="alert alert-danger">
+            <strong>Pendaftaran gagal!</strong>
+            Harap perbaiki data yang salah.
+        </div>
+
+        <?php } ?>
+
+
+        <form method="POST" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
+
+           
+
+            <div class="form-group">
+
+                <label>
+                    Nama Lengkap
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    name="nama_lengkap"
+                    placeholder="Contoh: Budi Santoso"
+                    value="<?php echo htmlspecialchars($nama); ?>"
+                >
+
+                <span class="error">
+                    <?php echo $namaErr ? "* $namaErr" : ""; ?>
+                </span>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Nomor WhatsApp
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="number"
+                    name="no_whatsapp"
+                    placeholder="Contoh: 081234567890"
+                    value="<?php echo htmlspecialchars($whatsapp); ?>"
+                >
+
+                <span class="error">
+                    <?php echo $waErr ? "* $waErr" : ""; ?>
+                </span>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Email Institusi
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="email"
+                    name="email_institusi"
+                    placeholder="Contoh: budi@university.ac.id"
+                    value="<?php echo htmlspecialchars($email); ?>"
+                >
+
+                <span class="error">
+                    <?php echo $emailErr ? "* $emailErr" : ""; ?>
+                </span>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Pilihan Mata Kuliah Praktikum
+                    <span class="required">*</span>
+                </label>
+
+                <select name="pilihan_matkul">
+
+                    <option value="">
+                        -- Pilih Mata Kuliah --
+                    </option>
+
+                    <?php foreach ($daftar_matkul as $mk) { ?>
+
+                    <option
+                        value="<?php echo htmlspecialchars($mk); ?>"
+                        <?php echo ($matkul == $mk) ? 'selected' : ''; ?>
+                    >
+                        <?php echo htmlspecialchars($mk); ?>
+                    </option>
+
+                    <?php } ?>
+
+                </select>
+
+                <span class="error">
+                    <?php echo $matkulErr ? "* $matkulErr" : ""; ?>
+                </span>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Motivasi Mendaftar
+                    <span class="required">*</span>
+                </label>
+
+                <textarea
+                    name="motivasi"
+                    placeholder="Tuliskan alasan kamu ingin menjadi asisten praktikum..."
+                ><?php echo htmlspecialchars($motivasi); ?></textarea>
+
+                <span class="error">
+                    <?php echo $motivasiErr ? "* $motivasiErr" : ""; ?>
+                </span>
+
+            </div>
+
+
+            <div class="button-container">
+
+                <button type="submit">
+                    Daftar Sekarang
+                </button>
+
+                <?php if (!empty($_SESSION['data_pendaftar'])) { ?>
+
+                    <a href="?page=id_card" class="btn-lihat-data">
+                        Lihat Data Pendaftar
+                    </a>
+
+                <?php } ?>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <?php } ?>
 
 </body>
+
 </html>
+```
+
+**Tinggal copy semua kode di atas ke `soal.php`.** CSS dan `logo.png` tetap gunakan file dari template.
+
+Catatan: kode ini mengikuti instruksi validasi yang ada di jurnal, termasuk penyimpanan data menggunakan `$_SESSION` dan perubahan tampilan ke Kartu Registrasi setelah berhasil.
+
+Kalau kamu mau, setelah ini aku juga bisa bantu **cek apakah struktur folder Laragon kamu sudah benar supaya tidak muncul 404 Not Found lagi**.
